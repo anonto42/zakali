@@ -2,11 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import { RoleEnum } from '../../common/enum/user.enum';
+import { IUser } from './user.interface';
+import { UserGender } from './user.enum';
 
 @Schema({ timestamps: true })
-export class User extends Document 
+export class User extends Document implements IUser
 {
-
   // Personal info
 
   @Prop({ 
@@ -42,21 +43,41 @@ export class User extends Document
   age: number;
 
   @Prop({
-    enum: RoleEnum,
-    default: RoleEnum.USER,
+    type: String,
+    required: true
+  })
+  contact: string;
+
+  @Prop({
+    type: String,
+    required: true
+  })
+  location: string;
+
+  @Prop({
+    type: String,
+    enum: UserGender,
+    default: UserGender.MALE,
     required: false
   })
-  role: RoleEnum;
+  gender: UserGender;
 
   @Prop({
     type: String,
     default: "https://i.ibb.co/z5YHLV9/profile.png"
   })
   avatar: string;
-
-
+  
+  
   // Auth related fields
-
+  
+  @Prop({
+    enum: RoleEnum,
+    default: RoleEnum.USER,
+    required: false
+  })
+  role: RoleEnum;
+   
   @Prop({
     type: Boolean,
     default: false

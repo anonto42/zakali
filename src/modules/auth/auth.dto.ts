@@ -10,8 +10,8 @@ export class CreateUserDto
     @IsEmail({},{ message: 'Email must be a valid email' })
     email: string;
 
-    @IsNotEmpty({ message: 'Phone is required' })
-    phone: string;
+    @IsNotEmpty({ message: 'Contact is required' })
+    contact: string;
 
     @IsNotEmpty({ message: 'Location is required' })
     location: string;

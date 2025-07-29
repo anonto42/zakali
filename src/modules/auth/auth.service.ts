@@ -16,7 +16,7 @@ export class AuthService {
         private readonly utilsService: UtilsService
     ){}
 
-    async register(createUserDto: CreateUserDto): Promise<User>
+    async register(createUserDto: CreateUserDto): Promise<{ message: string, newUser: any }>
     {
         const isUserExist = await this.userModel.findOne( { email: createUserDto.email } )
 
@@ -26,12 +26,29 @@ export class AuthService {
 
         const user = await this.userModel.create( createUserDto )
 
+        const otp = this.utilsService.generateOtp(6);
+        
+        this.utilsService.sendMail(user.email, otp, "User created successfully");
+
         if ( !user ) throw new HttpException('User not created', HttpStatus.BAD_REQUEST )
+
+        user.otp = otp;
+
+        user.otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+        await user.save();
+
+        const userFromDB = {
+            name: user.name,
+            email: user.email,
+            contact: user.contact,
+            location: user.location,
+        }
             
-        return user
+        return { message:"User created successfully & check your email for otp and verify your account", newUser: userFromDB}
     }
 
-    async login(loginUserDto: LoginUserDto): Promise<{ user: User, accessToken: string, refreshToken: string }> 
+    async login(loginUserDto: LoginUserDto): Promise<{ user: any, accessToken: string, refreshToken: string }> 
     {
         const user = await this.userModel.findOne( { email: loginUserDto.email } )
 
@@ -49,7 +66,14 @@ export class AuthService {
         
         await user.save();
 
-        return { user, accessToken, refreshToken }
+        const userFromDB = {
+            name: user.name,
+            email: user.email,
+            contact: user.contact,
+            location: user.location,
+        }
+
+        return { user: userFromDB, accessToken, refreshToken }
     }
 
     async refresh(refreshUserDto: RefreshUserDto): Promise<{ accessToken: string }> 
@@ -74,7 +98,6 @@ export class AuthService {
     
         return { accessToken };
     }
-    
 
     async otp(otpUserDto: OtpUserDto): Promise<{ message: string, value: null }> 
     {
@@ -115,7 +138,7 @@ export class AuthService {
             
             await user.save();
             
-            return { message: "User verified successfully" }
+            return { message: "User verified successfully" };
         };
 
         const value = this.utilsService.generateOtp(6).toString();

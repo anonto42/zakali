@@ -35,6 +35,8 @@ export class DatabaseService
         email: superAdminEmail,
         password: superAdminPassword,
         role: RoleEnum.SUPER_ADMIN,
+        location: "   ",
+        contact: "   ",
       });
 
       console.log('Super user created successfully!');

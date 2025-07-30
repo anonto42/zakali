@@ -25,9 +25,18 @@ router
 
 router
   .route('/')
-  .post(
-    validateRequest(UserValidation.createUserZodSchema),
-    UserController.createUser
+  .patch(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    fileUploadHandler(),
+    UserController.uploadPhots
+  );
+
+router
+  .route('/enhance-profile')
+  .put(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    validateRequest(UserValidation.enhanceProfileZodSchema),
+    UserController.enhanceProfile
   );
 
 export const UserRoutes = router;

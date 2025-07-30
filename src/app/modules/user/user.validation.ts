@@ -20,7 +20,30 @@ const updateUserZodSchema = z.object({
   image: z.string().optional(),
 });
 
+const enhanceProfileZodSchema = z.object({
+  body: z.object({
+    gender: z.string().optional(),
+    age: z.number().optional(),
+    phone: z.string().optional(),
+    country: z.string().optional(),
+    peferredCountry: z.string().optional(),
+    education: z.string().optional(),
+    language: z.string().optional(),
+    religion: z.string().optional(),
+    marriedStatus: z.string().optional(),
+    height: z.string().optional(),
+    weight: z.string().optional(),
+    hearColour: z.string().optional(),
+    eyeColour: z.string().optional(),
+    interestedIn: z.string().optional(),
+    lookingFor: z.string().optional(),
+    aboutMe: z.string().optional(),
+    myChoice: z.array(z.string()).optional(),
+  })
+});
+
 export const UserValidation = {
   createUserZodSchema,
   updateUserZodSchema,
+  enhanceProfileZodSchema,
 };

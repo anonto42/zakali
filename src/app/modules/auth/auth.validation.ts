@@ -47,6 +47,16 @@ const createRefreshToken = z.object({
   })
 })
 
+const createUserZodSchema = z.object({
+  body: z.object({
+    name: z.string({ required_error: 'Name is required' }),
+    email: z.string({ required_error: 'Email is required' }),
+    phone: z.string({ required_error: 'Phone is required' }),
+    location: z.string({ required_error: 'Location is required' }),
+    password: z.string({ required_error: 'Password is required' })
+  }),
+});
+
 export const AuthValidation = {
   createVerifyEmailZodSchema,
   createForgetPasswordZodSchema,
@@ -54,4 +64,6 @@ export const AuthValidation = {
   createResetPasswordZodSchema,
   createChangePasswordZodSchema,
   createRefreshToken,
+  createUserZodSchema,
 };
+    

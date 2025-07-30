@@ -16,12 +16,50 @@ import cryptoToken from '../../../util/cryptoToken';
 import generateOTP from '../../../util/generateOTP';
 import { ResetToken } from '../resetToken/resetToken.model';
 import { User } from '../user/user.model';
-import { STATUS } from '../../../enums/user';
+import { STATUS, USER_ROLES } from '../../../enums/user';
 import ms, { StringValue } from "ms";
+import { IUser } from '../user/user.interface';
+
+//create user to db
+const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
+  //set role
+  payload.role = USER_ROLES.USER;
+  const createUser = await User.create(payload);
+  if (!createUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user');
+  }
+
+  //send email
+  const otp = generateOTP(6);
+  const values = {
+    name: createUser.name,
+    otp: otp,
+    email: createUser.email!,
+  };
+  const createAccountTemplate = emailTemplate.createAccount(values);
+  emailHelper.sendEmail(createAccountTemplate);
+
+  //save to DB
+  const authentication = {
+    oneTimeCode: otp,
+    expireAt: new Date(Date.now() + 5 * 60000),
+  };
+  await User.findOneAndUpdate(
+    { _id: createUser._id },
+    { $set: { authentication } }
+  );
+
+  return {
+    name: createUser.name,
+    email: createUser.email,
+  };
+};
+
 
 //login
 const loginUserFromDB = async (payload: ILoginData) => {
   const { email, password } = payload;
+  console.log(payload)
   const isExistUser = await User.findOne({ email }).select('+password');
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
@@ -116,7 +154,7 @@ const forgetPasswordToDB = async (email: string) => {
   }
 
   //send mail
-  const otp = generateOTP();
+  const otp = generateOTP(6);
   const value = {
     otp,
     email: isExistUser.email,
@@ -303,4 +341,5 @@ export const AuthService = {
   forgetPasswordToDB,
   resetPasswordToDB,
   changePasswordToDB,
+  createUserToDB,
 };

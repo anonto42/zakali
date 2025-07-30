@@ -13,6 +13,12 @@ router.post(
 );
 
 router.post(
+  '/register',
+  validateRequest(AuthValidation.createUserZodSchema),
+  AuthController.createUser
+)
+
+router.post(
   '/forget-password',
   validateRequest(AuthValidation.createForgetPasswordZodSchema),
   AuthController.forgetPassword

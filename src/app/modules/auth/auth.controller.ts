@@ -16,6 +16,18 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const createUser = catchAsync(async (req: Request, res: Response) => {
+  const { ...userData } = req.body;
+  const result = await AuthService.createUserToDB(userData);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'User created successfully',
+    data: result,
+  });
+});
+
 const loginUser = catchAsync(async (req: Request, res: Response) => {
   const { ...loginData } = req.body;
   const result = await AuthService.loginUserFromDB(loginData);
@@ -83,5 +95,6 @@ export const AuthController = {
   forgetPassword,
   resetPassword,
   changePassword,
-  refreshAccesstoken
+  refreshAccesstoken,
+  createUser
 };

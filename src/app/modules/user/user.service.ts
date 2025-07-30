@@ -163,10 +163,86 @@ const sendVerificationRequest = async (
 
 };
 
+const addToWinkedList = async (
+  payload: JwtPayload,
+  ID: string
+) => {
+  const { id } = payload;
+  const objid = new Types.ObjectId(id);
+  const isExistUser = await User.findById(objid);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const likedUser = new Types.ObjectId(ID);
+  const isExistLikedUser = await User.findById(likedUser);
+  if (!isExistLikedUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Liked user doesn't exist!");
+  };
+
+  isExistUser.windedProfiles.push(likedUser._id);
+  await isExistUser.save();
+
+  return true;
+};
+
+const likedProfileList = async (
+  payload: JwtPayload,
+  ID: string
+) => {
+  const { id } = payload;
+  const objid = new Types.ObjectId(id);
+  const isExistUser = await User.findById(objid);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const likedUser = new Types.ObjectId(ID);
+  const isExistLikedUser = await User.findById(likedUser);
+  if (!isExistLikedUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Liked user doesn't exist!");
+  };
+
+  isExistUser.likedProfiles.push(likedUser._id);
+  await isExistUser.save();
+
+  return true;
+};
+
+const getWinkedList = async (
+  payload: JwtPayload
+) => {
+  const { id } = payload;
+  const objid = new Types.ObjectId(id);
+  const isExistUser = await User.findById(objid).populate('windedProfiles').lean().exec();
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  return isExistUser.windedProfiles;
+};
+
+const getLikedProfileList = async (
+  payload: JwtPayload
+) => {
+  const { id } = payload;
+  const objid = new Types.ObjectId(id);
+  const isExistUser = await User.findById(objid).populate('likedProfiles').lean().exec();
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  return isExistUser.likedProfiles;
+};
+
 export const UserService = {
+  sendVerificationRequest,
   getUserProfileFromDB,
+  getLikedProfileList,
   updateProfileToDB,
   uploadPhotosToDB,
+  likedProfileList,
+  addToWinkedList,
   enhanceProfile,
-  sendVerificationRequest,
+  getWinkedList,
 };

@@ -47,4 +47,22 @@ router
     UserController.sendVerificationRequest
   );
 
+router
+  .route("/liked-profile-list")
+  .get(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.likedProfileList)
+  .post(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    validateRequest(UserValidation.addToListSchema),
+    UserController.likedProfileList
+  );
+
+router
+  .route("/winked-profile-list")
+  .get(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.addToWinkedList)
+  .post(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    validateRequest(UserValidation.addToListSchema),
+    UserController.addToWinkedList
+  );
+
 export const UserRoutes = router;

@@ -42,8 +42,15 @@ const enhanceProfileZodSchema = z.object({
   })
 });
 
+const addToListSchema = z.object({
+  body: z.object({
+    targetID: z.string({ required_error: 'Target ID is required' }),
+  })
+});
+
 export const UserValidation = {
   createUserZodSchema,
   updateUserZodSchema,
   enhanceProfileZodSchema,
+  addToListSchema
 };

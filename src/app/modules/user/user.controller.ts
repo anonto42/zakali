@@ -59,7 +59,25 @@ const enhanceProfile = catchAsync(async (req: Request | any, res: Response, next
   });
 });
 
-export const UserController = { 
-  getUserProfile, updateProfile, uploadPhots, enhanceProfile,
+const sendVerificationRequest = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+  const user = req.user;
 
+  const image = getMultipleFilesPath(req.files, 'image');
+  const doc = getSingleFilePath(req.files, 'doc');
+
+  const data = { image, doc };
+
+  const result = await UserService.sendVerificationRequest(user, data);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Verification request sent successfully',
+    data: result,
+  });
+});
+
+export const UserController = { 
+  getUserProfile, updateProfile, uploadPhots, enhanceProfile, 
+  sendVerificationRequest,
 };

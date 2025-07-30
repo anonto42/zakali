@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { JwtPayload } from 'jsonwebtoken';
-import { USER_ROLES } from '../../../enums/user';
+import { USER_ROLES, VALIDATION_STATUS } from '../../../enums/user';
 import ApiError from '../../../errors/ApiError';
 import { emailHelper } from '../../../helpers/emailHelper';
 import { emailTemplate } from '../../../shared/emailTemplate';
@@ -9,6 +9,7 @@ import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 import { Types } from 'mongoose';
+import Validation from '../validation/validation.model';
 
 const getUserProfileFromDB = async (
   user: JwtPayload
@@ -103,9 +104,69 @@ const enhanceProfile = async (
   return isExistUser;
 };
 
+const sendVerificationRequest = async (
+  payload: JwtPayload,
+  data: any
+) => {
+  try {
+
+    const objID = new Types.ObjectId(payload.id);
+    const user = await User.findById(objID);
+    if (!user) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+    }
+  
+    if (user.accountVerification.isVerified) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "User already verified!");
+    }
+  
+    if (!data.image || !data.doc) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Image and doc are required!");
+    }
+
+    if (!Array.isArray(data.image)) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Image data must be an array of strings");
+    }
+    
+    const isExistValidation = await Validation.findOne({ user: user._id });
+    if (isExistValidation) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "User already sent verification request!");
+    }
+
+    user.accountVerification.document = "";
+    user.accountVerification.samplePhotos = [];
+  
+    user.accountVerification.document = data.doc;
+    user.accountVerification.samplePhotos.push(...data.image);
+    
+    await user.save();
+    
+    const validation = await Validation.create({
+      user: user._id,
+      image: data.image,
+      doc: data.doc,
+      status: VALIDATION_STATUS.PENDING,
+    })
+  
+    return validation;
+    
+  } catch (error: any) {
+    unlinkFile(data.doc);
+    data.image.map((image: string) => {
+      unlinkFile(image);
+    });
+    throw new ApiError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      error.message
+    )
+  }
+
+};
+
 export const UserService = {
   getUserProfileFromDB,
   updateProfileToDB,
   uploadPhotosToDB,
   enhanceProfile,
+  sendVerificationRequest,
 };

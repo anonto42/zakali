@@ -39,4 +39,12 @@ router
     UserController.enhanceProfile
   );
 
+router
+  .route("/send-verification-request")
+  .post(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    fileUploadHandler(),
+    UserController.sendVerificationRequest
+  );
+
 export const UserRoutes = router;

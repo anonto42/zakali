@@ -84,16 +84,16 @@ const userSchema = new Schema<IUser, UserModal>(
       },
       document: {
         type: String,
-        default: null,
+        default: "",
       },
-      samplePhotos: [{
-        type: String,
-        default: null,
-      }],
+      samplePhotos: {
+        type: [String],
+        default: [],
+      },
     },
     photos: [{
       type: String,
-      default: null,
+      default: "",
     }],
     profileLocked: {
       type: Boolean,

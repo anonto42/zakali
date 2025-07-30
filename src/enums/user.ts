@@ -14,3 +14,9 @@ export enum GENDER {
   FEMALE = 'FEMALE',
   OTHER = 'OTHER'
 }
+
+export enum VALIDATION_STATUS {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED'
+}

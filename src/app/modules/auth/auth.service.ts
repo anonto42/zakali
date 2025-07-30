@@ -55,11 +55,9 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
   };
 };
 
-
 //login
 const loginUserFromDB = async (payload: ILoginData) => {
   const { email, password } = payload;
-  console.log(payload)
   const isExistUser = await User.findOne({ email }).select('+password');
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");

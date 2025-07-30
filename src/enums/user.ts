@@ -8,3 +8,9 @@ export enum STATUS {
   DELETED = 'DELETED',
   BLOCKED = 'BLOCKED'
 }
+
+export enum GENDER {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER'
+}

@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { StatusCodes } from 'http-status-codes';
 import { model, Schema } from 'mongoose';
 import config from '../../../config';
-import { STATUS, USER_ROLES } from '../../../enums/user';
+import { GENDER, STATUS, USER_ROLES } from '../../../enums/user';
 import ApiError from '../../../errors/ApiError';
 import { IUser, UserModal } from './user.interface';
 
@@ -23,6 +23,113 @@ const userSchema = new Schema<IUser, UserModal>(
       required: true,
       unique: true,
       lowercase: true,
+      match: [ 
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 
+        'Please provide a valid email address' 
+      ],
+    },
+    gender:{
+      type: String,
+      enum: Object.values(GENDER),
+      default: GENDER.MALE,
+    },
+    phone:{
+      type: String,
+      required: true,
+    },
+    location:{
+      type: String,
+      required: true,
+    },  
+    age:{
+      type: Number,
+      required: true,
+    },
+    country:{
+      type: String,
+      required: true,
+    },
+    peferredCountry:{
+      type: String,
+      required: true,
+    },
+    education:{
+      type: String,
+      required: true,
+    },
+    language:{
+      type: String,
+      required: true,
+    },
+    religion:{
+      type: String,
+      required: true,
+    },
+    aboutMe:{
+      type: String,
+      required: true,
+    },
+    height:{
+      type: String,
+      required: true,
+    },
+    weight:{
+      type: String,
+      required: true,
+    },
+    accountVerification:{
+      isVerified: {
+        type: Boolean,
+        default: false,
+      },
+      document: {
+        type: String,
+        default: null,
+      },
+      samplePhotos: [{
+        type: String,
+        default: null,
+      }],
+    },
+    photos: [{
+      type: String,
+      default: null,
+    }],
+    profileLocked: {
+      type: Boolean,
+      default: false,
+    },
+    likedProfiles: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+    windedProfiles: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    }],
+    eyeColour: {
+      type: String,
+      default: null,
+    },
+    hearColour: {
+      type: String,
+      default: null,
+    },
+    interestedIn: {
+      type: String,
+      default: null,
+    },
+    lookingFor: {
+      type: String,
+      default: null,
+    },
+    myChoice: {
+      type: [String],
+      default: null,
+    },
+    marriedStatus:{
+      type: String,
+      default: null,
     },
     password: {
       type: String,
@@ -30,7 +137,7 @@ const userSchema = new Schema<IUser, UserModal>(
       select: 0,
       minlength: 8,
     },
-    image: {
+    profileImage: {
       type: String,
       default: 'https://i.ibb.co/z5YHLV9/profile.png',
     },

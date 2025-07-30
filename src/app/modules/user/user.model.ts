@@ -35,47 +35,47 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     phone:{
       type: String,
-      required: true,
+      default: "",
     },
     location:{
       type: String,
-      required: true,
+      default: "",
     },  
     age:{
       type: Number,
-      required: true,
+      default: 0,
     },
     country:{
       type: String,
-      required: true,
+      default: "",
     },
     peferredCountry:{
       type: String,
-      required: true,
+      default: "",
     },
     education:{
       type: String,
-      required: true,
+      default: "",
     },
     language:{
       type: String,
-      required: true,
+      default: "",
     },
     religion:{
       type: String,
-      required: true,
+      default: "",
     },
     aboutMe:{
       type: String,
-      required: true,
+      default: "",
     },
     height:{
       type: String,
-      required: true,
+      default: "",
     },
     weight:{
       type: String,
-      required: true,
+      default: "",
     },
     accountVerification:{
       isVerified: {
@@ -109,27 +109,27 @@ const userSchema = new Schema<IUser, UserModal>(
     }],
     eyeColour: {
       type: String,
-      default: null,
+      default: "",
     },
     hearColour: {
       type: String,
-      default: null,
+      default: "",
     },
     interestedIn: {
       type: String,
-      default: null,
+      default: "",
     },
     lookingFor: {
       type: String,
-      default: null,
+      default: "",
     },
     myChoice: {
       type: [String],
-      default: null,
+      default: [""],
     },
     marriedStatus:{
       type: String,
-      default: null,
+      default: "",
     },
     password: {
       type: String,

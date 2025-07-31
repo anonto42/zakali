@@ -236,7 +236,6 @@ const getWinkedList = async (payload: JwtPayload, body: any) => {
   return paginatedWinkedProfiles;
 };
 
-
 const getLikedProfileList = async (
   payload: JwtPayload,
   body: any
@@ -328,6 +327,30 @@ const getLovedProfileList = async (
   return paginatedLovedProfiles;
 };
 
+const searchProfiles = async (payload: JwtPayload, body: any) => {
+  const { page, limit, searchQuery } = body; 
+
+  const { id } = payload;
+
+  const usernameCondition = searchQuery 
+    ? { name: { $regex: searchQuery, $options: 'i' } } 
+    : {};
+
+  const profiles = await User.find(usernameCondition) 
+    .select("-password -authentication -__v -updatedAt -createdAt -verified -windedProfiles -likedProfiles -accountVerification -photos -profileImage") 
+    .limit(limit) 
+    .skip((page - 1) * limit) 
+    .lean()
+    .exec();
+
+  if (!profiles || profiles.length === 0) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "No profiles found matching your search criteria.");
+  }
+
+  return profiles;
+};
+
+
 export const UserService = {
   sendVerificationRequest,
   getUserProfileFromDB,
@@ -338,6 +361,7 @@ export const UserService = {
   likedProfileList,
   addToWinkedList,
   enhanceProfile,
+  searchProfiles,
   getWinkedList,
   loveProfile,
   getProfiles,

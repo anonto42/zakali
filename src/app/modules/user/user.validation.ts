@@ -48,9 +48,18 @@ const addToListSchema = z.object({
   })
 });
 
+const searchProfilesSchema = z.object({
+  body: z.object({
+    searchQuery: z.string({ required_error: 'Search query is required' }),
+    page: z.number().optional(),
+    limit: z.number().optional(),
+  })
+});
+
 export const UserValidation = {
   createUserZodSchema,
   updateUserZodSchema,
   enhanceProfileZodSchema,
-  addToListSchema
+  addToListSchema,
+  searchProfilesSchema
 };

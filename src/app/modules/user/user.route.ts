@@ -78,4 +78,12 @@ router
   .route("/profiles")
   .get(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.getProfiles);
 
+router
+  .route("/search-profiles")
+  .get(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER), 
+    validateRequest(UserValidation.searchProfilesSchema), 
+    UserController.searchProfiles
+  );
+  
 export const UserRoutes = router;

@@ -177,6 +177,10 @@ const addToWinkedList = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "Liked user doesn't exist!");
   };
 
+  if (isExistUser.windedProfiles.includes(likedUser._id)) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User already added to winked list!");
+  }
+  
   isExistUser.windedProfiles.push(likedUser._id);
   await isExistUser.save();
 
@@ -200,36 +204,60 @@ const likedProfileList = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "Liked user doesn't exist!");
   };
 
+  if (isExistUser.likedProfiles.includes(likedUser._id)) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User already added to liked list!");
+  }
+
   isExistUser.likedProfiles.push(likedUser._id);
   await isExistUser.save();
 
   return true;
 };
 
-const getWinkedList = async (
-  payload: JwtPayload
-) => {
+const getWinkedList = async (payload: JwtPayload, body: any) => {
   const { id } = payload;
+  const { page, limit } = body;
+
   const objid = new Types.ObjectId(id);
-  const isExistUser = await User.findById(objid).populate('windedProfiles').lean().exec();
+  const isExistUser = await User.findById(objid)
+    .populate('windedProfiles') 
+    .lean()
+    .exec();
+
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-  return isExistUser.windedProfiles;
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  const paginatedWinkedProfiles = isExistUser.windedProfiles.slice(startIndex, endIndex);
+
+  return paginatedWinkedProfiles;
 };
 
+
 const getLikedProfileList = async (
-  payload: JwtPayload
+  payload: JwtPayload,
+  body: any
 ) => {
   const { id } = payload;
+  const { page, limit } = body;
   const objid = new Types.ObjectId(id);
-  const isExistUser = await User.findById(objid).populate('likedProfiles').lean().exec();
+  const isExistUser = await User.findById(objid)
+    .populate('likedProfiles') 
+    .lean()
+    .exec();
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-  return isExistUser.likedProfiles;
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  const paginatedLikedProfiles = isExistUser.likedProfiles.slice(startIndex, endIndex);
+
+  return paginatedLikedProfiles;
 };
 
 const getProfiles = async (
@@ -253,9 +281,57 @@ const getProfiles = async (
   return profiles;
 };
 
+const loveProfile = async (
+  payload: JwtPayload,
+  ID: string
+) => {
+  const { id } = payload;
+  const objid = new Types.ObjectId(id);
+  const isExistUser = await User.findById(objid);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const likedUser = new Types.ObjectId(ID);
+  const isExistLikedUser = await User.findById(likedUser);
+  if (!isExistLikedUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Liked user doesn't exist!");
+  };
+
+  if (isExistUser.lovedProfiles.includes(likedUser._id)) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User already added to loved list!");
+  }
+
+  isExistUser.lovedProfiles.push(likedUser._id);
+  await isExistUser.save();
+
+  return true;
+};
+
+const getLovedProfileList = async (
+  payload: JwtPayload,
+  body: any
+) => {
+  const { id } = payload;
+  const { page, limit } = body;
+  const objid = new Types.ObjectId(id);
+  const isExistUser = await User.findById(objid).populate('lovedProfiles').lean().exec();
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  const paginatedLovedProfiles = isExistUser.lovedProfiles.slice(startIndex, endIndex);
+
+  return paginatedLovedProfiles;
+};
+
 export const UserService = {
   sendVerificationRequest,
   getUserProfileFromDB,
+  getLovedProfileList,
   getLikedProfileList,
   updateProfileToDB,
   uploadPhotosToDB,
@@ -263,5 +339,6 @@ export const UserService = {
   addToWinkedList,
   enhanceProfile,
   getWinkedList,
-  getProfiles
+  loveProfile,
+  getProfiles,
 };

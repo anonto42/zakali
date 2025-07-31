@@ -32,6 +32,7 @@ export type IUser = {
   profileImage: string;      
   likedProfiles: Types.ObjectId[];
   windedProfiles: Types.ObjectId[]; 
+  lovedProfiles: Types.ObjectId[];
   subscription: subscriptionType;
   password: string;
   role: USER_ROLES;

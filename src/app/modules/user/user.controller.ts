@@ -79,7 +79,7 @@ const sendVerificationRequest = catchAsync(async (req: Request | any, res: Respo
 
 const addToWinkedList = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
   const user = req.user;
-  const result = await UserService.addToWinkedList(user, req.body);
+  const result = await UserService.addToWinkedList(user, req.body.targetID);
 
   sendResponse(res, {
     success: true,
@@ -91,7 +91,7 @@ const addToWinkedList = catchAsync(async (req: Request | any, res: Response, nex
 
 const likedProfileList = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
   const user = req.user;
-  const result = await UserService.likedProfileList(user, req.body);
+  const result = await UserService.likedProfileList(user, req.body.targetID);
 
   sendResponse(res, {
     success: true,
@@ -103,7 +103,7 @@ const likedProfileList = catchAsync(async (req: Request | any, res: Response, ne
 
 const getWinkedList = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
   const user = req.user;
-  const result = await UserService.getWinkedList(user);
+  const result = await UserService.getWinkedList(user, req.body);
 
   sendResponse(res, {
     success: true,
@@ -115,7 +115,7 @@ const getWinkedList = catchAsync(async (req: Request | any, res: Response, next:
 
 const getLikedProfileList = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
   const user = req.user;
-  const result = await UserService.getLikedProfileList(user);
+  const result = await UserService.getLikedProfileList(user, req.body);
 
   sendResponse(res, {
     success: true,
@@ -137,12 +137,38 @@ const getProfiles = catchAsync(async (req: Request | any, res: Response, next: N
   });
 });
 
+const loveProfile = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+  const user = req.user;
+  const result = await UserService.loveProfile(user, req.body.targetID);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Profile added to loved list successfully',
+    data: result,
+  });
+});
+
+const getLovedProfileList = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+  const user = req.user;
+  const result = await UserService.getLovedProfileList(user, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Loved list retrieved successfully',
+    data: result,
+  });
+});
+
 export const UserController = { 
   getUserProfile, updateProfile, uploadPhots, enhanceProfile, 
   sendVerificationRequest,
   getLikedProfileList,
+  getLovedProfileList,
   likedProfileList,
   addToWinkedList,
   getWinkedList,
   getProfiles,
+  loveProfile,
 };

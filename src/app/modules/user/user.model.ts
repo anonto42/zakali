@@ -107,6 +107,10 @@ const userSchema = new Schema<IUser, UserModal>(
       type: Schema.Types.ObjectId,
       ref: 'User',
     }],
+    lovedProfiles: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    }],
     eyeColour: {
       type: String,
       default: "",

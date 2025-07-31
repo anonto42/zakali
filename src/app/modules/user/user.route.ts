@@ -49,8 +49,8 @@ router
 
 router
   .route("/liked-profile-list")
-  .get(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.likedProfileList)
-  .post(
+  .get(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.getLikedProfileList)
+  .patch(
     auth(USER_ROLES.ADMIN, USER_ROLES.USER),
     validateRequest(UserValidation.addToListSchema),
     UserController.likedProfileList
@@ -58,11 +58,20 @@ router
 
 router
   .route("/winked-profile-list")
-  .get(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.addToWinkedList)
-  .post(
+  .get(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.getWinkedList)
+  .patch(
     auth(USER_ROLES.ADMIN, USER_ROLES.USER),
     validateRequest(UserValidation.addToListSchema),
     UserController.addToWinkedList
+  );
+
+router
+  .route("/love-profile")
+  .get(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.getLovedProfileList)
+  .patch(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    validateRequest(UserValidation.addToListSchema),
+    UserController.loveProfile
   );
 
 router

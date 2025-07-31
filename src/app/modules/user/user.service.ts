@@ -2,10 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { JwtPayload } from 'jsonwebtoken';
 import { USER_ROLES, VALIDATION_STATUS } from '../../../enums/user';
 import ApiError from '../../../errors/ApiError';
-import { emailHelper } from '../../../helpers/emailHelper';
-import { emailTemplate } from '../../../shared/emailTemplate';
 import unlinkFile from '../../../shared/unlinkFile';
-import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 import { Types } from 'mongoose';
@@ -235,6 +232,27 @@ const getLikedProfileList = async (
   return isExistUser.likedProfiles;
 };
 
+const getProfiles = async (
+  payload: JwtPayload,
+  pagination: { page: number, limit: number }
+) => {
+  const { id } = payload;
+  const objid = new Types.ObjectId(id);
+  const isExistUser = await User.findById(objid).populate('windedProfiles').lean().exec();
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const profiles = await User.find({ role: { $ne: USER_ROLES.ADMIN } })
+  .select("-password -authentication -__v -updatedAt -createdAt -verified -windedProfiles -likedProfiles -accountVerification -photos -profileImage")
+  .limit(pagination.limit)
+  .skip((pagination.page - 1) * pagination.limit)
+  .lean()
+  .exec();
+
+  return profiles;
+};
+
 export const UserService = {
   sendVerificationRequest,
   getUserProfileFromDB,
@@ -245,4 +263,5 @@ export const UserService = {
   addToWinkedList,
   enhanceProfile,
   getWinkedList,
+  getProfiles
 };

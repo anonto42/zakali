@@ -65,4 +65,8 @@ router
     UserController.addToWinkedList
   );
 
+router
+  .route("/profiles")
+  .get(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.getProfiles);
+
 export const UserRoutes = router;

@@ -125,6 +125,18 @@ const getLikedProfileList = catchAsync(async (req: Request | any, res: Response,
   });
 });
 
+const getProfiles = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+  const user = req.user;
+  const result = await UserService.getProfiles(user, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Profiles retrieved successfully',
+    data: result,
+  });
+});
+
 export const UserController = { 
   getUserProfile, updateProfile, uploadPhots, enhanceProfile, 
   sendVerificationRequest,
@@ -132,4 +144,5 @@ export const UserController = {
   likedProfileList,
   addToWinkedList,
   getWinkedList,
+  getProfiles,
 };

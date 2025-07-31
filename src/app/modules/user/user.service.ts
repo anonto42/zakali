@@ -443,6 +443,26 @@ const filterProfile = async (payload: JwtPayload, body: any) => {
   return profiles;
 };
 
+const getAProfile = async (
+  payload: JwtPayload,
+  ID: string
+) => {
+  const { id } = payload;
+  const objid = new Types.ObjectId(id);
+  const isExistUser = await User.findById(objid).select('-password -authentication -__v -updatedAt -createdAt -verified').lean().exec();
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const profileID = new Types.ObjectId(ID);
+  const profile = await User.findById(profileID).select('-password -authentication -__v -updatedAt -createdAt -verified -windedProfiles -likedProfiles -accountVerification -geoLocation').lean().exec();
+  if (!profile) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Profile doesn't exist!");
+  }
+
+  return profile;
+};
+
 export const UserService = {
   sendVerificationRequest,
   getUserProfileFromDB,
@@ -458,4 +478,5 @@ export const UserService = {
   getWinkedList,
   loveProfile,
   getProfiles,
+  getAProfile,
 };

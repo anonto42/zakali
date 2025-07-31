@@ -95,4 +95,11 @@ router
     UserController.filterProfiles
   );
   
+router
+  .route("/:id")
+  .get(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER), 
+    UserController.getAProfile
+  );
+
 export const UserRoutes = router;

@@ -350,6 +350,98 @@ const searchProfiles = async (payload: JwtPayload, body: any) => {
   return profiles;
 };
 
+const filterProfile = async (payload: JwtPayload, body: any) => {
+  const { page, limit } = body;
+  const { id } = payload;
+
+  const user = await User.findById(id).select('geoLocation');
+
+  if (!user || !user.geoLocation) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Your location is not available.");
+  }
+
+  const { coordinates } = user.geoLocation;
+  const userLatitude = coordinates[1];
+  const userLongitude = coordinates[0];
+
+  const filterConditions: any = {};
+
+  Object.keys(body).forEach(key => {
+    switch (key) {
+      case 'age_from':
+        filterConditions.age = { $gte: body.age_from };
+        break;
+      case 'age_to':
+        filterConditions.age = { ...filterConditions.age, $lte: body.age_to };
+        break;
+      case 'gender':
+        filterConditions.gender = body.gender;
+        break;
+      case 'interestedIn':
+        filterConditions.interestedIn = body.interestedIn;
+        break;
+      case 'lookingFor':
+        filterConditions.lookingFor = body.lookingFor;
+        break;
+      case 'preferredCountry':
+        filterConditions.country = body.preferredCountry;
+        break;
+      case 'education':
+        filterConditions.education = body.education;
+        break;
+      case 'language':
+        filterConditions.language = body.language;
+        break;
+      case 'religion':
+        filterConditions.religion = body.religion;
+        break;
+      case 'marriedStatus':
+        filterConditions.marriedStatus = body.marriedStatus;
+        break;
+      case 'height':
+        filterConditions.height = body.height;
+        break;
+      case 'weight':
+        filterConditions.weight = body.weight;
+        break;
+      case 'hearColour':
+        filterConditions.hearColour = body.hearColour;
+        break;
+      case 'eyeColour':
+        filterConditions.eyeColour = body.eyeColour;
+        break;
+      default:
+        break;
+    }
+  });
+  
+  if (body.distance) {
+    const maxDistance = body.distance * 1000;
+
+    filterConditions.geoLocation = {
+      $nearSphere: {
+        $geometry: {
+          type: "Point",
+          coordinates: [userLongitude, userLatitude],
+        },
+        $maxDistance: maxDistance,
+      },
+    };
+  }
+
+  const profiles = await User.find(filterConditions)
+    .select("-password -authentication -__v -updatedAt -createdAt -verified -windedProfiles -likedProfiles -accountVerification -photos -profileImage")
+    .limit(limit) 
+    .skip((page - 1) * limit) 
+    .lean()
+    .exec();
+
+  if (!profiles || profiles.length === 0) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "No profiles found matching your search criteria.");
+  }
+
+  return profiles;
+};
 
 export const UserService = {
   sendVerificationRequest,
@@ -362,6 +454,7 @@ export const UserService = {
   addToWinkedList,
   enhanceProfile,
   searchProfiles,
+  filterProfile,
   getWinkedList,
   loveProfile,
   getProfiles,

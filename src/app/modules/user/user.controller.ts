@@ -173,6 +173,18 @@ const searchProfiles = catchAsync(async (req: Request | any, res: Response, next
   });
 });
 
+const filterProfiles = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+  const user = req.user;
+  const result = await UserService.filterProfile(user, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Profiles filtered successfully',
+    data: result,
+  });
+});
+
 export const UserController = { 
   getUserProfile, updateProfile, uploadPhots, enhanceProfile, 
   sendVerificationRequest,
@@ -181,6 +193,7 @@ export const UserController = {
   likedProfileList,
   addToWinkedList,
   searchProfiles,
+  filterProfiles,
   getWinkedList,
   getProfiles,
   loveProfile,

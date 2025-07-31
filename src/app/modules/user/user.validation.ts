@@ -11,6 +11,18 @@ const createUserZodSchema = z.object({
   }),
 });
 
+const createUploadPhotosSchema = z.object({
+  body: z.object({
+    image: z.array(z.instanceof(File)).refine(files => files.length > 0, {
+      message: "At least one image is required",
+    }).refine(files => files.every(file => file.size <= 10 * 1024 * 1024), {
+      message: "Each image should not exceed 10MB",
+    }).refine(files => files.every(file => file.type.startsWith("image/")), {
+      message: "All files must be images",
+    }),
+  }),
+});
+
 const updateUserZodSchema = z.object({
   name: z.string().optional(),
   contact: z.string().optional(),
@@ -56,10 +68,34 @@ const searchProfilesSchema = z.object({
   })
 });
 
+const filterProfileSchema = z.object({
+  body: z.object({
+    age_from: z.number().optional(),
+    age_to: z.number().optional(),
+    distance: z.number().optional(),
+    gender: z.string().optional(),
+    interestedIn: z.string().optional(),
+    lookingFor: z.string().optional(),
+    preferredCountry: z.string().optional(),
+    education: z.string().optional(),
+    language: z.string().optional(),
+    religion: z.string().optional(),
+    marriedStatus: z.string().optional(),
+    height: z.string().optional(),
+    weight: z.string().optional(),
+    hearColour: z.string().optional(),
+    eyeColour: z.string().optional(),
+    page: z.number().optional(),
+    limit: z.number().optional(),
+  })
+});
+
 export const UserValidation = {
   createUserZodSchema,
   updateUserZodSchema,
   enhanceProfileZodSchema,
   addToListSchema,
-  searchProfilesSchema
+  searchProfilesSchema,
+  filterProfileSchema,
+  createUploadPhotosSchema,
 };

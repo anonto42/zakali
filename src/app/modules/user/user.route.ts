@@ -28,6 +28,7 @@ router
   .patch(
     auth(USER_ROLES.ADMIN, USER_ROLES.USER),
     fileUploadHandler(),
+    // validateRequest(UserValidation.createUploadPhotosSchema),
     UserController.uploadPhots
   );
 
@@ -84,6 +85,14 @@ router
     auth(USER_ROLES.ADMIN, USER_ROLES.USER), 
     validateRequest(UserValidation.searchProfilesSchema), 
     UserController.searchProfiles
+  );
+
+router
+  .route("/filter-profiles")
+  .get(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER), 
+    validateRequest(UserValidation.filterProfileSchema), 
+    UserController.filterProfiles
   );
   
 export const UserRoutes = router;

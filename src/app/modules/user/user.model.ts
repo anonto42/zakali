@@ -168,6 +168,17 @@ const userSchema = new Schema<IUser, UserModal>(
         default: null,
       },
     },
+    geoLocation: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
+    },
   },
   { timestamps: true }
 );
@@ -233,5 +244,7 @@ userSchema.pre('save', async function (next) {
 
   next();
 });
+
+userSchema.index({ geoLocation: '2dsphere' });
 
 export const User = model<IUser, UserModal>('User', userSchema);

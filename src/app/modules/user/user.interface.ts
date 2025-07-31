@@ -43,6 +43,10 @@ export type IUser = {
     oneTimeCode: number;
     expireAt: Date;
   };
+  geoLocation: {
+    type: string;
+    coordinates: number[];
+  };
 };
 
 type subscriptionType = {

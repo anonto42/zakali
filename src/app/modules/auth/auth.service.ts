@@ -24,12 +24,22 @@ import { IUser } from '../user/user.interface';
 const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
   //set role
   payload.role = USER_ROLES.USER;
+
+  // If geoLocation is provided, store it as GeoJSON
+  if (payload.geoLocation) {
+    payload.geoLocation = {
+      type: "Point",
+      coordinates: [payload.geoLocation.coordinates[0], payload.geoLocation.coordinates[1]],
+    };
+  }
+
+  // Create the user in the database
   const createUser = await User.create(payload);
   if (!createUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user');
   }
 
-  //send email
+  // Send email
   const otp = generateOTP(6);
   const values = {
     name: createUser.name,
@@ -39,16 +49,17 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
   const createAccountTemplate = emailTemplate.createAccount(values);
   emailHelper.sendEmail(createAccountTemplate);
 
-  //save to DB
+  // Save OTP and expiration time to DB
   const authentication = {
     oneTimeCode: otp,
-    expireAt: new Date(Date.now() + 5 * 60000),
+    expireAt: new Date(Date.now() + 5 * 60000), // OTP expires in 5 minutes
   };
   await User.findOneAndUpdate(
     { _id: createUser._id },
     { $set: { authentication } }
   );
 
+  // Return user details (name and email)
   return {
     name: createUser.name,
     email: createUser.email,

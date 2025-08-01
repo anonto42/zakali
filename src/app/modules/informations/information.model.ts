@@ -1,6 +1,6 @@
 import { model, Schema } from "mongoose";
 
-enum INFORMATION_TYPE {
+export enum INFORMATION_TYPE {
     ABOUT_US = 'ABOUT_US',
     PRIVACY_POLICY = 'PRIVACY_POLICY',
     TERMS_OF_SERVICE = 'TERMS_OF_SERVICE',
@@ -17,6 +17,7 @@ export const InformationModal = model<Information>('Information', new Schema<Inf
         type: String,
         enum: Object.values(INFORMATION_TYPE),
         required: true,
+        unique: true
     },
     title: {
         type: String,

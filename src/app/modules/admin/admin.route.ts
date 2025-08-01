@@ -7,10 +7,25 @@ import { AdminValidation } from './admin.validation';
 
 const router = express.Router();
 
-router.post(
-  '/overview',
-  auth(USER_ROLES.ADMIN),
-  AdminController.overviewController
-);
+router
+  .route("/overview")  
+  .get(
+    auth(USER_ROLES.ADMIN),
+    AdminController.overviewController
+  );
+
+router
+  .route("/users")
+  .get(
+    auth(USER_ROLES.ADMIN),
+    AdminController.usersController
+  );
+
+router
+  .route("/users/:id")
+  .patch(
+    auth(USER_ROLES.ADMIN),
+    AdminController.blockUser
+  );
 
 export const AdminRoutes = router;

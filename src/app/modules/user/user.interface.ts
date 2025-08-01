@@ -2,6 +2,16 @@ import { Model, Types } from 'mongoose';
 import { GENDER, STATUS, USER_ROLES } from '../../../enums/user';
 
 export type IUser = {
+  boost: {
+    boost: boolean;
+    boostExpireAt: Date;
+    boostPlan: Types.ObjectId;
+  };
+  subscription: {
+    subscription: boolean;
+    subscriptionExpireAt: Date;
+    subscriptionPlan: Types.ObjectId;
+  };
   name: string;
   email: string;
   phone: string;
@@ -33,7 +43,6 @@ export type IUser = {
   likedProfiles: Types.ObjectId[];
   windedProfiles: Types.ObjectId[]; 
   lovedProfiles: Types.ObjectId[];
-  subscription: subscriptionType;
   password: string;
   role: USER_ROLES;
   status: STATUS;

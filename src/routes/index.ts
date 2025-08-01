@@ -5,6 +5,7 @@ import { AdminRoutes } from '../app/modules/admin/admin.route';
 import { BoostRoutes } from '../app/modules/boost/boost.route';
 import { SubscriptionRoutes } from '../app/modules/subscription/subscription.route';
 import { InformationRoutes } from '../app/modules/informations/info.module';
+import { SupportRoutes } from '../app/modules/support/support.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -31,6 +32,10 @@ const apiRoutes = [
   {
     path: '/information',
     route: InformationRoutes
+  },
+  {
+    path: "/support",
+    route: SupportRoutes
   }
 ];
 

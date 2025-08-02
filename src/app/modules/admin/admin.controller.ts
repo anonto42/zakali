@@ -53,8 +53,38 @@ const blockUser = catchAsync(async (
   });
 });
 
+const boostedUsersController = catchAsync(async (
+  req: Request, 
+  res: Response
+) => {
+  const result = await AdminService.boostedUsers(req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Boosted users retrieved successfully",
+    data: result,
+  });
+});
+
+const subscriptionsController = catchAsync(async (
+  req: Request, 
+  res: Response
+) => {
+  const result = await AdminService.subscriptions(req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Subscriptions retrieved successfully",
+    data: result,
+  });
+});
+
 export const AdminController = { 
   overviewController,
   usersController,
   blockUser,
+  boostedUsersController,
+  subscriptionsController,
 };

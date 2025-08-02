@@ -28,4 +28,18 @@ router
     AdminController.blockUser
   );
 
+router
+  .route("/boosted-users")
+  .get(
+    auth(USER_ROLES.ADMIN),
+    AdminController.boostedUsersController
+  );
+
+router
+  .route("/subscribers")
+  .get(
+    auth(USER_ROLES.ADMIN),
+    AdminController.subscriptionsController
+  );
+
 export const AdminRoutes = router;

@@ -112,6 +112,13 @@ router
   );
 
 router
+  .route("/home-profiles")
+  .get(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER), 
+    UserController.getBoostedProfiles
+  );
+
+router
   .route("/payment/success")
   .get(UserController.paymentSuccess);
 

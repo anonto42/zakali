@@ -220,6 +220,18 @@ const boostProfile = catchAsync(async (req: Request | any, res: Response, next: 
   });
 });
 
+const getBoostedProfiles = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+  const user = req.user;
+  const result = await UserService.getBoostedProfiles(user, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Boosted profiles retrieved successfully',
+    data: result,
+  });
+});
+
 const buySubscription = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
   
   const user = req.user;
@@ -317,6 +329,7 @@ export const UserController = {
   loveProfile,
   getAProfile,
   boostProfile,
+  getBoostedProfiles,
   buySubscription,
   paymentSuccess,
   paymentFailure,

@@ -8,7 +8,6 @@ import { User } from './user.model';
 import { Types } from 'mongoose';
 import Validation from '../validation/validation.model';
 import { Subscription } from '../subscription/subscription.model';
-import { SUBSCRIPTION_TYPE } from '../subscription/subscription.interface';
 import { stripeWithKey } from '../../../util/stripe';
 import { Request } from 'express';
 import { Boost } from '../boost/boost.model';
@@ -276,7 +275,7 @@ const getProfiles = async (
   }
 
   const profiles = await User.find({ role: { $ne: USER_ROLES.ADMIN } })
-  .select("-password -authentication -__v -updatedAt -createdAt -verified -windedProfiles -likedProfiles -accountVerification -photos -profileImage")
+  .select("-password -authentication -__v -updatedAt -createdAt -verified -windedProfiles -likedProfiles -accountVerification -photos -profileImage -subscription -boost -lastPayment")
   .limit(pagination.limit)
   .skip((pagination.page - 1) * pagination.limit)
   .lean()
@@ -576,22 +575,48 @@ const boostProfile = async (
   return session.url;
 };
 
+const getBoostedProfiles = async (
+  payload: JwtPayload,
+  data: { limit: number, page: number }
+) => {
+  const { id } = payload;
+  const objid = new Types.ObjectId(id);
+  const isExistUser = await User.findById(objid);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const boostedUsers = await User.find({
+    "boost.boost": true,
+    "boost.boostExpireAt": { $gt: new Date() }
+  })
+    .select("-password -authentication -__v -updatedAt -createdAt -verified -windedProfiles -likedProfiles -accountVerification -photos -status -profileImage -subscription -boost -lastPayment")
+    .limit(data.limit)
+    .skip((data.page - 1) * data.limit)
+    .sort({ createdAt: -1 })
+    .lean()
+    .exec();
+
+  return boostedUsers.length <= ( data.limit - 2 ) ? await User.find({ role: { $ne: USER_ROLES.ADMIN } }).select("-password -authentication -__v -updatedAt -createdAt -verified -windedProfiles -likedProfiles -accountVerification -photos -profileImage -status -subscription -boost -lastPayment").limit(data.limit).skip((data.page - 1) * data.limit).sort({ createdAt: -1 }).lean().exec() : boostedUsers;
+};
+
 export const UserService = {
   sendVerificationRequest,
   getUserProfileFromDB,
   getLovedProfileList,
   getLikedProfileList,
+  getBoostedProfiles,
   updateProfileToDB,
   uploadPhotosToDB,
   likedProfileList,
+  buySubscription,
   addToWinkedList,
   enhanceProfile,
   searchProfiles,
   filterProfile,
   getWinkedList,
+  boostProfile,
+  getAProfile,
   loveProfile,
   getProfiles,
-  getAProfile,
-  buySubscription,
-  boostProfile,
 };

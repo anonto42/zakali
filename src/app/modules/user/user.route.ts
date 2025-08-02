@@ -94,6 +94,30 @@ router
     validateRequest(UserValidation.filterProfileSchema), 
     UserController.filterProfiles
   );
+
+router
+  .route("/buy-subscription")
+  .post(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    validateRequest(UserValidation.buySubscriptionSchema),
+    UserController.buySubscription
+  );
+
+router
+  .route("/boost-profile")
+  .post(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    validateRequest(UserValidation.boostProfileSchema),
+    UserController.boostProfile
+  );
+
+router
+  .route("/payment/success")
+  .get(UserController.paymentSuccess);
+
+router
+  .route("/payment/failure")
+  .get(UserController.paymentFailure);
   
 router
   .route("/:id")

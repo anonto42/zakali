@@ -4,6 +4,14 @@ import catchAsync from '../../../shared/catchAsync';
 import { getMultipleFilesPath, getSingleFilePath } from '../../../shared/getFilePath';
 import sendResponse from '../../../shared/sendResponse';
 import { UserService } from './user.service';
+import ApiError from '../../../errors/ApiError';
+import { stripeWithKey } from '../../../util/stripe';
+import { Types } from 'mongoose';
+import { User } from './user.model';
+import { Subscription } from '../subscription/subscription.model';
+import { SUBSCRIPTION_TYPE } from '../subscription/subscription.interface';
+import { Boost } from '../boost/boost.model';
+import { PaymentSuccessPage, PyamentCancel, PyamentFailed } from '../../../shared/paymenTemplates';
 
 const getUserProfile = catchAsync(async (req: Request | any, res: Response) => {
   const user = req.user;
@@ -198,6 +206,103 @@ const getAProfile = catchAsync( async (req: Request | any, res: Response, next: 
   });
 });
 
+const boostProfile = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+
+  const user = req.user;
+
+  const result = await UserService.boostProfile(user, req);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Profile added to boost list successfully',
+    data: result,
+  });
+});
+
+const buySubscription = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+  
+  const user = req.user;
+
+  const result = await UserService.buySubscription(user, req);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Subscription bought successfully',
+    data: result,
+  });
+});
+
+const paymentSuccess = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+ 
+  const { session_id } = req.query;
+  if (!session_id) throw new ApiError(StatusCodes.BAD_REQUEST, "Session ID is required!");
+
+  const session = await stripeWithKey.checkout.sessions.retrieve(session_id as string);
+  if (!session) throw new ApiError(StatusCodes.NOT_FOUND, "Session was not found!");
+
+  if (session.payment_status !== 'paid') {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Payment was not successful!");
+  }
+  const userId = session.metadata?.userID;
+
+  const ObjId = new Types.ObjectId(userId);
+  const user = await User.findById(ObjId);
+  if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "User was not found!");
+
+  if( !user.lastPayment || user.lastPayment === "" ) {
+    return res.send(PyamentFailed);
+  }
+
+  if( user.lastPayment != session_id ) {
+    return res.send(PyamentFailed);
+  }
+
+  if ( session.metadata?.isSubscription === "true") {
+
+    const subscriptionObjID = new Types.ObjectId(session.metadata?.plan_id);
+    const subscription = await Subscription.findById(subscriptionObjID);
+    if (!subscription) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "Subscription was not found!");
+    }
+
+    const subscriptionDuration = SUBSCRIPTION_TYPE.MONTHLY == subscription.subscriptionType ? 30 : SUBSCRIPTION_TYPE.YEARLY == subscription.subscriptionType ? 365 : 7;
+    
+    user.subscription.subscription = true;
+    user.subscription.subscriptionPlan = subscription._id;
+    user.subscription.subscriptionExpireAt = new Date(Date.now() + subscriptionDuration * 24 * 60 * 60 * 1000);
+    user.lastPayment = "";
+    
+    await user.save();
+
+    return res.send(PaymentSuccessPage(subscription.price));
+    
+  } else if (session.metadata?.isBoost === "true") {
+    
+    const boostObjID = new Types.ObjectId(session.metadata?.boost_id);
+    const boost = await Boost.findById(boostObjID);
+    if (!boost) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "Boost was not found!");
+    }
+
+    user.boost.boost = true;
+    user.boost.boostPlan = boost._id;
+    user.boost.boostExpireAt = new Date(Date.now() + boost.duration);
+    user.lastPayment = "";
+    
+    await user.save();
+
+    return res.send(PaymentSuccessPage(boost.price));
+    
+  }
+
+});
+
+const paymentFailure = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+  return res.send(PyamentCancel);
+});
+
 export const UserController = { 
   getUserProfile, updateProfile, uploadPhots, enhanceProfile, 
   sendVerificationRequest,
@@ -211,4 +316,8 @@ export const UserController = {
   getProfiles,
   loveProfile,
   getAProfile,
+  boostProfile,
+  buySubscription,
+  paymentSuccess,
+  paymentFailure,
 };

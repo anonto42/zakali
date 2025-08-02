@@ -90,6 +90,18 @@ const filterProfileSchema = z.object({
   })
 });
 
+const buySubscriptionSchema = z.object({
+  body: z.object({
+    planID: z.string({ required_error: 'Plan ID is required' }),
+  })
+})
+
+const boostProfileSchema = z.object({
+  body: z.object({
+    planID: z.string({ required_error: 'Plan ID is required' }),
+  })
+})
+
 export const UserValidation = {
   createUserZodSchema,
   updateUserZodSchema,
@@ -98,4 +110,6 @@ export const UserValidation = {
   searchProfilesSchema,
   filterProfileSchema,
   createUploadPhotosSchema,
+  buySubscriptionSchema,
+  boostProfileSchema,
 };

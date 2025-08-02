@@ -7,6 +7,11 @@ import { IUser } from './user.interface';
 import { User } from './user.model';
 import { Types } from 'mongoose';
 import Validation from '../validation/validation.model';
+import { Subscription } from '../subscription/subscription.model';
+import { SUBSCRIPTION_TYPE } from '../subscription/subscription.interface';
+import { stripeWithKey } from '../../../util/stripe';
+import { Request } from 'express';
+import { Boost } from '../boost/boost.model';
 
 const getUserProfileFromDB = async (
   user: JwtPayload
@@ -463,6 +468,108 @@ const getAProfile = async (
   return profile;
 };
 
+const buySubscription = async (
+  payload: JwtPayload,
+  req: Request
+) => {
+  const { id } = payload;
+  const objid = new Types.ObjectId(id);
+  const isExistUser = await User.findById(objid);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const { planID } = req.body;
+
+  const subscription = new Types.ObjectId(planID);
+  const isExistSubscription = await Subscription.findById(subscription);
+  if (!isExistSubscription) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Subscription doesn't exist!");
+  };
+
+  if (isExistUser.subscription?.subscription && isExistUser.subscription.subscriptionExpireAt > new Date( Date.now() )) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User already added to subscription list!");
+  };
+
+  const session = await stripeWithKey.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    line_items: [
+      {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: isExistSubscription.subscriptionType,
+          },
+          unit_amount: isExistSubscription.price * 100,
+        },
+        quantity: 1,
+      },
+    ],
+    success_url: `${req.protocol}://${req.get('host')}/api/v1/user/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${req.protocol}://${req.get('host')}/api/v1/user/payment/failure`,
+    metadata: {
+      userID: isExistUser._id.toString(),
+      isSubscription: "true",
+      isBoost: "false",
+      plan_id: subscription._id.toString(),
+    },
+  });
+
+  isExistUser.lastPayment = session.id;
+  await isExistUser.save();
+
+  return session.url;
+};
+
+const boostProfile = async (
+  payload: JwtPayload,
+  req: Request
+) => {
+  const { id } = payload;
+  const objid = new Types.ObjectId(id);
+  const isExistUser = await User.findById(objid);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const { planID } = req.body;
+
+  const plan = new Types.ObjectId(planID);
+  const isExistPlan = await Boost.findById(plan);
+  if (!isExistPlan) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Boost doesn't exist!");
+  };
+
+  const session = await stripeWithKey.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    line_items: [
+      {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: isExistPlan.discription,
+          },
+          unit_amount: isExistPlan.price * 100,
+        },
+        quantity: 1,
+      },
+    ],
+    success_url: `${req.protocol}://${req.get('host')}/api/v1/user/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${req.protocol}://${req.get('host')}/api/v1/user/payment/failure`,
+    metadata: {
+      userID: isExistUser._id.toString(),
+      isSubscription: "false",
+      isBoost: "true",
+      plan_id: plan._id.toString(),
+    },
+  });
+
+
+  return session.url;
+};
+
 export const UserService = {
   sendVerificationRequest,
   getUserProfileFromDB,
@@ -479,4 +586,6 @@ export const UserService = {
   loveProfile,
   getProfiles,
   getAProfile,
+  buySubscription,
+  boostProfile,
 };

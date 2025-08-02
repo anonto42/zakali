@@ -280,7 +280,7 @@ const paymentSuccess = catchAsync(async (req: Request | any, res: Response, next
     
   } else if (session.metadata?.isBoost === "true") {
     
-    const boostObjID = new Types.ObjectId(session.metadata?.boost_id);
+    const boostObjID = new Types.ObjectId(session.metadata?.plan_id);
     const boost = await Boost.findById(boostObjID);
     if (!boost) {
       throw new ApiError(StatusCodes.NOT_FOUND, "Boost was not found!");

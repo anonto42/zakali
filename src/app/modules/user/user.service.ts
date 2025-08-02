@@ -541,6 +541,10 @@ const boostProfile = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "Boost doesn't exist!");
   };
 
+  if (isExistUser.boost?.boost && isExistUser.boost.boostExpireAt > new Date( Date.now() )) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User already added to boost list!");
+  };
+
   const session = await stripeWithKey.checkout.sessions.create({
     payment_method_types: ['card'],
     mode: 'payment',
@@ -562,10 +566,12 @@ const boostProfile = async (
       userID: isExistUser._id.toString(),
       isSubscription: "false",
       isBoost: "true",
-      plan_id: plan._id.toString(),
+      plan_id: isExistPlan._id.toString(),
     },
   });
 
+  isExistUser.lastPayment = session.id;
+  await isExistUser.save();
 
   return session.url;
 };

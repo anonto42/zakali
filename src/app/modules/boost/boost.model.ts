@@ -12,7 +12,7 @@ const boostSchema = new Schema<IBoost, BoostModel>(
       required: true,
     },
     duration: {
-      type: Date,
+      type: Number,
       required: true,
     },
   },

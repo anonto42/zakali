@@ -4,7 +4,7 @@ import { Model } from "mongoose";
 export interface IBoost {
     price: number;
     discription: string;
-    duration: Date;
+    duration: number;
 }
 
 export interface BoostModel extends Model<IBoost> {

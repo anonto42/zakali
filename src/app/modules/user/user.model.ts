@@ -8,6 +8,40 @@ import { IUser, UserModal } from './user.interface';
 
 const userSchema = new Schema<IUser, UserModal>(
   {
+    boost: {
+      boost: {
+        type: Boolean,
+        default: false,
+      },
+      boostExpireAt: {
+        type: Date,
+        default: null,
+      },
+      boostPlan: {
+        type: Schema.Types.ObjectId,
+        ref: 'Boost',
+        default: null,
+      },
+    },
+    subscription: {
+      subscription: {
+        type: Boolean,
+        default: false,
+      },
+      subscriptionExpireAt: {
+        type: Date,
+        default: null,
+      },
+      subscriptionPlan: {
+        type: Schema.Types.ObjectId,
+        ref: 'Subscription',
+        default: null,
+      },
+    },
+    lastPayment:{
+      type: String,
+      default: "",
+    },
     name: {
       type: String,
       required: true,

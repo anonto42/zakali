@@ -12,6 +12,7 @@ export type IUser = {
     subscriptionExpireAt: Date;
     subscriptionPlan: Types.ObjectId;
   };
+  lastPayment: string;
   name: string;
   email: string;
   phone: string;

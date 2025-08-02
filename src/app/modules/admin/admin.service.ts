@@ -35,10 +35,46 @@ const blockUser = async (id: string) => {
   await user.save();
   
   return user.status;
+}; 
+
+const boostedUsers = async (data: { limit: number, page: number }) => {
+  const users = await User.find({
+    "boost.boost": true, 
+    // "boost.boostExpireAt": { $gt: new Date() } 
+  })
+    .populate("boost.boostPlan")
+    .select("-authentication -__v -updatedAt -createdAt -verified -windedProfiles -likedProfiles -accountVerification -photos -profileImage -password -lovedProfiles -geoLocation")
+    .limit(data.limit)
+    .skip((data.page - 1) * data.limit)
+    .lean()
+    .exec();
+
+  return users;
 };
+
+const subscriptions = async (
+  data: { limit: number, page: number }
+) => {
+
+  const users = await User.find({
+    "subscription.subscription": true, 
+    // "subscription.subscriptionExpireAt": { $gt: new Date() } 
+  })
+    .populate("subscription.subscriptionPlan")
+    .select("-authentication -__v -updatedAt -createdAt -verified -windedProfiles -likedProfiles -accountVerification -photos -profileImage -password -lovedProfiles -geoLocation")
+    .limit(data.limit)
+    .skip((data.page - 1) * data.limit)
+    .lean()
+    .exec();
+
+  return users;
+};
+
 
 export const AdminService = {
   overview,
   users,
   blockUser,
+  boostedUsers,
+  subscriptions,
 };

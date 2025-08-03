@@ -6,6 +6,7 @@ import { BoostRoutes } from '../app/modules/boost/boost.route';
 import { SubscriptionRoutes } from '../app/modules/subscription/subscription.route';
 import { InformationRoutes } from '../app/modules/informations/info.module';
 import { SupportRoutes } from '../app/modules/support/support.route';
+import { CommunicationRoutes } from '../app/modules/communication/communication.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -36,6 +37,10 @@ const apiRoutes = [
   {
     path: "/support",
     route: SupportRoutes
+  },
+  {
+    path: "/communication",
+    route: CommunicationRoutes
   }
 ];
 

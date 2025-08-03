@@ -12,6 +12,7 @@ import { Subscription } from '../subscription/subscription.model';
 import { SUBSCRIPTION_TYPE } from '../subscription/subscription.interface';
 import { Boost } from '../boost/boost.model';
 import { PaymentSuccessPage, PyamentCancel, PyamentFailed } from '../../../shared/paymenTemplates';
+import { Revenue } from '../revenue/revenue.model';
 
 const getUserProfile = catchAsync(async (req: Request | any, res: Response) => {
   const user = req.user;
@@ -288,6 +289,12 @@ const paymentSuccess = catchAsync(async (req: Request | any, res: Response, next
     
     await user.save();
 
+    await Revenue.create({
+      amount: subscription.price,
+      type: "SUBSCRIPTION",
+      user: user._id,
+    });
+
     return res.send(PaymentSuccessPage(subscription.price));
     
   } else if (session.metadata?.isBoost === "true") {
@@ -304,6 +311,12 @@ const paymentSuccess = catchAsync(async (req: Request | any, res: Response, next
     user.lastPayment = "";
     
     await user.save();
+
+    await Revenue.create({
+      amount: boost.price,
+      type: "BOOST",
+      user: user._id,
+    });
 
     return res.send(PaymentSuccessPage(boost.price));
     

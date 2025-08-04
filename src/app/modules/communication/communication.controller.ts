@@ -139,7 +139,44 @@ const deleteMessages = catchAsync(async(
     });
 });
 
+const blockUser = catchAsync(async(
+    req: Request,
+    res: Response
+  ) => {
+    const user = req.user;
+
+    const { id } = req.params;
+  
+    const result = await communicationService.blockUser(user,id);
+  
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "User blocked successfull",
+      data: result,
+    });
+});
+
+const unblockUser = catchAsync(async(
+    req: Request,
+    res: Response
+  ) => {
+    const user = req.user;
+
+    const { id } = req.params;
+  
+    const result = await communicationService.unblockUser(user,id);
+  
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "User unblocked successfull",
+      data: result,
+    });
+});
+
 export const communicationController = {
   createChat,getChatById,allChats,deleteChat,
-  sendMessage,getMessages,deleteMessages
+  sendMessage,getMessages,deleteMessages,
+  blockUser,unblockUser
 };

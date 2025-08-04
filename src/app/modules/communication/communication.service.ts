@@ -24,6 +24,10 @@ const createChat = async (
     if (!isUser) {
       throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
     };
+
+    if ( isRecever.blockedBy && isRecever.blockedBy.includes(isUser._id)) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "You are blocked by this user");
+    };
   
     const isChatExist = await ChatRoom.findOne({
         
@@ -153,6 +157,12 @@ const sendMessage = async (
         `Chat not founded!`
       ); 
     };
+
+    const otherUser = chatRoom.participants.filter( ( e: any ) => e.toString() !== user._id.toString() );
+
+    if (user.blockedBy && !user.blockedBy.includes(otherUser[0])) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "You are blocked by this user");
+    };
     
     const isInChat = chatRoom.participants.filter( ( e: any ) => e.toString() === user._id.toString() );
     if (!isInChat) {
@@ -163,9 +173,9 @@ const sendMessage = async (
     };
 
     const message = await Message.create({
-        sender: user._id,
-        content: payload.content,
-        chatRoom: chatRoom._id
+      sender: user._id,
+      content: payload.content,
+      chatRoom: chatRoom._id
     });
 
     return message;
@@ -219,13 +229,90 @@ const deleteMessages = async (
       ); 
     };
     return message;
-}
+};
+
+const blockUser = async (
+  payload: JwtPayload,
+  id: string    
+) => {
+  const UserObjID = new mongoose.Types.ObjectId(payload.id);
+  const blockedUserObjID = new mongoose.Types.ObjectId(id);
+
+  const blockUser = await User.findById(blockedUserObjID);
+  if (!blockUser) {
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      `User not founded!`
+    ); 
+  };
+
+  const isBlocked = blockUser.blockedBy.filter( ( e: any ) => e.toString() === UserObjID.toString() );
+
+  if (isBlocked.length > 0) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      `You are already blocked this user!`
+    ); 
+  };
+
+  blockUser.blockedBy.push(UserObjID);
+  await blockUser.save();
+
+  return "DONE";
+};
+
+const unblockUser = async (
+  payload: JwtPayload,
+  id: string    
+) => {
+  const UserObjID = new mongoose.Types.ObjectId(payload.id);
+  const blockedUserObjID = new mongoose.Types.ObjectId(id);
+
+  const blockUser = await User.findById(blockedUserObjID);
+  if (!blockUser) {
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      `User not founded!`
+    ); 
+  };
+
+  if (blockUser.blockedBy.length <= 0) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      `You are not blocked this user!`
+    ); 
+  };
+
+  if (
+    blockUser.blockedBy.length > 0 &&
+    !blockUser.blockedBy.includes(UserObjID)
+  ) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      `You are not blocked this user!`
+    ); 
+  };
+
+  blockUser.blockedBy = blockUser.blockedBy.filter( ( e: any ) => e.toString() !== UserObjID.toString() );
+  await blockUser.save();
+
+  return "DONE";
+};
+ 
+// Have to add block online status live socket audio video
 
 export const communicationService = {
-    createChat,getChatById,allChats,deleteChat,
+  getChatById,
+  deleteChat,
+  createChat,
+  allChats,
+  ...{
+    sendMessage,
+    getMessages,
+    deleteMessages,
     ...{
-        sendMessage,
-        getMessages,
-        deleteMessages
+      blockUser,
+      unblockUser
     }
+  }
 };

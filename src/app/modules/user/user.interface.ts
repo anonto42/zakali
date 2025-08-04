@@ -44,6 +44,7 @@ export type IUser = {
   likedProfiles: Types.ObjectId[];
   windedProfiles: Types.ObjectId[]; 
   lovedProfiles: Types.ObjectId[];
+  blockedBy: Types.ObjectId[];
   password: string;
   role: USER_ROLES;
   status: STATUS;

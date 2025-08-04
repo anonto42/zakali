@@ -179,6 +179,10 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       default: 'https://i.ibb.co/z5YHLV9/profile.png',
     },
+    blockedBy: {
+      type: [Schema.Types.ObjectId],
+      ref: 'User'
+    },
     status: {
       type: String,
       enum: Object.values(STATUS),

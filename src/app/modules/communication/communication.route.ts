@@ -69,6 +69,21 @@ router
     )
 
 router
+    .route("/block-user/:id")
+    .put(
+        auth(
+            USER_ROLES.ADMIN,
+            USER_ROLES.USER
+        ),
+        communicationController.blockUser
+    )
+    .patch(
+        auth(
+            USER_ROLES.ADMIN,
+            USER_ROLES.USER
+        ),
+        communicationController.unblockUser
+    )
     
 
 

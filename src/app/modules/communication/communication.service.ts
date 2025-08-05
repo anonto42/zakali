@@ -5,6 +5,7 @@ import { ChatRoom } from "./chat.model";
 import mongoose from "mongoose";
 import { JwtPayload } from "jsonwebtoken";
 import { Message } from "./message.model";
+import { socketHelper } from "../../../helpers/socketHelper";
 
 const createChat = async (
     sender: any, 
@@ -160,10 +161,19 @@ const sendMessage = async (
 
     const otherUser = chatRoom.participants.filter( ( e: any ) => e.toString() !== user._id.toString() );
 
-    if (user.blockedBy && !user.blockedBy.includes(otherUser[0])) {
+    console.log({
+      user: user.blockedBy,
+      otherUser,
+      cll: !user.blockedBy.includes(otherUser[0].toString()),
+      lsl: user.blockedBy.length > 0
+    })
+
+    if (user.blockedBy.length > 0 && user.blockedBy[0].toString() == otherUser[0].toString()) {
       throw new ApiError(StatusCodes.BAD_REQUEST, "You are blocked by this user");
     };
     
+    // return
+
     const isInChat = chatRoom.participants.filter( ( e: any ) => e.toString() === user._id.toString() );
     if (!isInChat) {
       throw new ApiError(
@@ -177,6 +187,19 @@ const sendMessage = async (
       content: payload.content,
       chatRoom: chatRoom._id
     });
+
+    //@ts-ignore
+    const io = global.io;
+
+
+    // Emit Message
+    const targetedSocketID = socketHelper.connectedUsers.get(otherUser[0].toString());
+    console.log(otherUser[0].toString());
+    console.log(targetedSocketID);
+    console.log(otherUser[0].toString());
+    if ( targetedSocketID ) {
+      io.to(targetedSocketID).emit(`socket:message:${otherUser[0].toString()}`, message);
+    };
 
     return message;
 };
@@ -298,7 +321,7 @@ const unblockUser = async (
 
   return "DONE";
 };
- 
+
 // Have to add block online status live socket audio video
 
 export const communicationService = {
